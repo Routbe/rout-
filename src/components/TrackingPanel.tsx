@@ -103,6 +103,8 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
   // Guest vs member vs verified: drives quota, vanity codes and the CTA copy.
   const [tierInput, setTierInput] = useState<TierInput>({ signedIn: false });
   const [linkCount, setLinkCount] = useState(0);
+  // Eigen codes hangen altijd onder de handle van de eigenaar.
+  const [handle, setHandle] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,7 +116,7 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
       const [{ data: profile }, { count }] = await Promise.all([
         db
           .from("profiles")
-          .select("verified, is_paid, is_early_believer")
+          .select("username, verified, is_paid, is_early_believer")
           .eq("id", user.id)
           .maybeSingle(),
         db
@@ -129,7 +131,9 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
           isPaid: profile?.is_paid ?? null,
           isEarlyBeliever: profile?.is_early_believer ?? null,
         });
+        setHandle((profile?.username as string | null) ?? null);
         setLinkCount(count ?? 0);
+
       }
       // Every connected domain is listed with its status; only a verified
       // domain with short links switched on can actually be picked.
