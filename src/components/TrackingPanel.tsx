@@ -18,8 +18,10 @@ import {
 import type { QRType } from "./QRTypeSelector";
 import {
   allocateSlug,
+  customLinkPrefix,
   isSlugAvailable,
   mergeKind,
+  namespacedSlug,
   normalizeSlug,
   shortLinkBase,
   randomToken,
@@ -28,6 +30,7 @@ import {
   validateSlug,
   type QrKind,
 } from "@/lib/short-links";
+
 import {
   limitsFor,
   shortLinkBlockReason,
