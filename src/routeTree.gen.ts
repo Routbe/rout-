@@ -36,6 +36,7 @@ import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as WifiQrRouteImport } from './routes/wifi-qr'
 import { Route as UsernameSlugRouteImport } from './routes/$username.$slug'
 import { Route as UsernameDonateRouteImport } from './routes/$username.donate'
+import { Route as DotwellKnownAtprotoDidRouteImport } from './routes/[.]well-known.atproto-did'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
@@ -212,6 +213,11 @@ const UsernameDonateRoute = UsernameDonateRouteImport.update({
   id: '/donate',
   path: '/donate',
   getParentRoute: () => UsernameRoute,
+} as any)
+const DotwellKnownAtprotoDidRoute = DotwellKnownAtprotoDidRouteImport.update({
+  id: '/.well-known/atproto-did',
+  path: '/.well-known/atproto-did',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
@@ -461,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/wifi-qr': typeof WifiQrRoute
   '/$username/$slug': typeof UsernameSlugRoute
   '/$username/donate': typeof UsernameDonateRoute
+  '/.well-known/atproto-did': typeof DotwellKnownAtprotoDidRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/domains': typeof AuthenticatedDomainsRoute
@@ -531,6 +538,7 @@ export interface FileRoutesByTo {
   '/wifi-qr': typeof WifiQrRoute
   '/$username/$slug': typeof UsernameSlugRoute
   '/$username/donate': typeof UsernameDonateRoute
+  '/.well-known/atproto-did': typeof DotwellKnownAtprotoDidRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/domains': typeof AuthenticatedDomainsRoute
@@ -603,6 +611,7 @@ export interface FileRoutesById {
   '/wifi-qr': typeof WifiQrRoute
   '/$username/$slug': typeof UsernameSlugRoute
   '/$username/donate': typeof UsernameDonateRoute
+  '/.well-known/atproto-did': typeof DotwellKnownAtprotoDidRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
@@ -675,6 +684,7 @@ export interface FileRouteTypes {
     | '/wifi-qr'
     | '/$username/$slug'
     | '/$username/donate'
+    | '/.well-known/atproto-did'
     | '/admin'
     | '/dashboard'
     | '/domains'
@@ -745,6 +755,7 @@ export interface FileRouteTypes {
     | '/wifi-qr'
     | '/$username/$slug'
     | '/$username/donate'
+    | '/.well-known/atproto-did'
     | '/admin'
     | '/dashboard'
     | '/domains'
@@ -816,6 +827,7 @@ export interface FileRouteTypes {
     | '/wifi-qr'
     | '/$username/$slug'
     | '/$username/donate'
+    | '/.well-known/atproto-did'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/domains'
@@ -886,6 +898,7 @@ export interface RootRouteChildren {
   VcardQrRoute: typeof VcardQrRoute
   VerifyRoute: typeof VerifyRoute
   WifiQrRoute: typeof WifiQrRoute
+  DotwellKnownAtprotoDidRoute: typeof DotwellKnownAtprotoDidRoute
   ApiPaymentStatusRoute: typeof ApiPaymentStatusRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthGitlabRoute: typeof AuthGitlabRouteWithChildren
@@ -1102,6 +1115,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$username/donate'
       preLoaderRoute: typeof UsernameDonateRouteImport
       parentRoute: typeof UsernameRoute
+    }
+    '/.well-known/atproto-did': {
+      id: '/.well-known/atproto-did'
+      path: '/.well-known/atproto-did'
+      fullPath: '/.well-known/atproto-did'
+      preLoaderRoute: typeof DotwellKnownAtprotoDidRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -1548,6 +1568,7 @@ const rootRouteChildren: RootRouteChildren = {
   VcardQrRoute: VcardQrRoute,
   VerifyRoute: VerifyRoute,
   WifiQrRoute: WifiQrRoute,
+  DotwellKnownAtprotoDidRoute: DotwellKnownAtprotoDidRoute,
   ApiPaymentStatusRoute: ApiPaymentStatusRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthGitlabRoute: AuthGitlabRouteWithChildren,
