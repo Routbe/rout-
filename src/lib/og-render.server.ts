@@ -81,3 +81,25 @@ export async function svgToPng(
   });
   return renderer.render().asPng();
 }
+
+/**
+ * Haalt een afbeelding op en geeft die terug als data-URI. resvg kan geen
+ * netwerkverzoeken doen, dus avatars moeten ingebed worden voor we
+ * rasteriseren. Bij twijfel (te groot, geen afbeelding, fout) geven we `null`
+ * terug zodat de kaart terugvalt op de initialen.
+ */
+export async function fetchImageAsDataUri(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, { redirect: "follow" });
+    if (!response.ok) return null;
+    const type = response.headers.get("content-type") ?? "";
+    if (!type.startsWith("image/") || type.includes("svg")) return null;
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > 3_000_000) return null;
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return `data:${type};base64,${btoa(binary)}`;
+  } catch {
+    return null;
+  }
+}
