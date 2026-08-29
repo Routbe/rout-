@@ -1590,10 +1590,11 @@ export function ProfileEditor() {
               <div className="rounded-t-2xl bg-foreground/90 p-[10px] pt-[18px] shadow-[0_20px_50px_-24px_rgba(0,0,0,0.5)]">
                 <span className="mx-auto mb-[8px] block h-1 w-1 rounded-full bg-background/40" />
                 <div className="scrollbar-slim aspect-[16/10] overflow-y-auto rounded-[4px] bg-background text-foreground">
-                  {/* 1:1 desktopproporties: render op 1280px en schaal mee met de kaart */}
-                  <div className="w-[1280px] origin-top-left scale-[0.234] sm:scale-[0.281] lg:scale-[0.234] xl:scale-[0.266]">
+                  {/* 1:1 desktopproporties: render op 1280px en zoom mee met de kaart */}
+                  <div className="w-[1280px]" style={{ zoom: 0.26 }}>
                     <ProfileView profile={previewDraft} free={!verified} layout="wide" />
                   </div>
+
                 </div>
               </div>
               {/* Hinge */}
