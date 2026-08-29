@@ -545,26 +545,27 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
         <p className="text-xs text-muted-foreground flex items-center gap-1.5">
           <Link2 className="w-3.5 h-3.5" /> {t("track.customCode")}
         </p>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-muted-foreground shrink-0">
-            {shortLinkBase(domainChoice === "default" ? null : domainChoice).replace(/^https?:\/\//, "")}/
+        {/* Vast voorvoegsel: een eigen code leeft altijd onder je eigen
+            handle, nooit in de root — zo kan niemand een handle kapen. */}
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+          <span className="min-w-0 shrink-0 break-all font-mono text-xs text-muted-foreground">
+            {vanityPrefix ??
+              `${shortLinkBase(domainChoice === "default" ? null : domainChoice).replace(/^https?:\/\//, "")}/…/`}
           </span>
           <Input
-            placeholder={limits.canPickVanitySlug ? "my-poster" : t("track.vanityPlaceholder")}
+            placeholder={canUseVanity ? "apple" : t("track.vanityPlaceholder")}
             value={slugInput}
             onChange={(e) => setSlugInput(normalizeSlug(e.target.value))}
-            disabled={!limits.canPickVanitySlug}
-            className="h-10 font-mono text-xs"
+            disabled={!canUseVanity}
+            className="h-10 min-w-0 flex-1 font-mono text-xs"
           />
         </div>
         <p className="text-[11px] text-muted-foreground">
-          {limits.canPickVanitySlug
-            ? t("track.randomHint")
-            : t("track.guestHint")}
+          {canUseVanity ? t("track.randomHint") : t("track.guestHint")}
         </p>
       </div>
 
-      {/* Strikte 21×21-canvas: past de payload nog in een Version 1-QR? */}
+      {/* Canvasgrootte: de code schaalt automatisch mee met de payload. */}
       <CanvasIndicator payload={previewPayload} />
 
       <Button
@@ -587,9 +588,10 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
       )}
       {!ready && (
         <p className="text-[11px] text-muted-foreground">
-          Add a link or upload a file to enable tracking.
+          Voeg een link toe of upload een bestand om tracking aan te zetten.
         </p>
       )}
+
 
     </div>
   );
