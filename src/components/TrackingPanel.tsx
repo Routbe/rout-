@@ -219,29 +219,33 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
         toast.error(quotaBlock);
         return;
       }
-      const vanityAllowed = limits.canPickVanitySlug;
+      const vanityAllowed = canUseVanity;
       if (wantsVanity && !vanityAllowed) {
         toast.info(
           t("track.vanityVerified"),
         );
       }
 
-      // A vanity code is validated and claimed here; otherwise we roll one.
+      // Een eigen code wordt hier gevalideerd en onder de eigen namespace
+      // geclaimd (`<handle>/apple` of `u/<alias>/apple`); anders rollen we er
+      // een willekeurige root-code voor.
       let slug: string | null;
-      if (wantsVanity && vanityAllowed) {
+      if (wantsVanity && vanityAllowed && handle) {
         const check = validateSlug(slugInput);
         if (!check.slug) {
           toast.error(check.error ?? t("track.slugInvalid"));
           return;
         }
-        if (!(await isSlugAvailable(check.slug))) {
+        const full = namespacedSlug(handle, namespaceVerified, check.slug);
+        if (!(await isSlugAvailable(full))) {
           toast.error(t("track.slugTaken"));
           return;
         }
-        slug = check.slug;
+        slug = full;
       } else {
         slug = await allocateSlug();
       }
+
 
       if (!slug) throw new Error("Could not allocate a short code");
 
