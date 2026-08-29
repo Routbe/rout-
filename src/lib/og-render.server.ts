@@ -9,11 +9,8 @@
  */
 
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index_bg.wasm";
-const FONT_URLS = [
-  // Regular + semibold Latin subset (woff — resvg leest geen woff2).
-  "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/files/inter-latin-400-normal.woff",
-  "https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/files/inter-latin-600-normal.woff",
-];
+/** Eigen fonts uit `public/fonts` — geen externe fontdienst, geen tracking. */
+const FONT_PATHS = ["/fonts/Inter-Regular.ttf", "/fonts/Inter-SemiBold.ttf"];
 
 let wasmReady: Promise<void> | null = null;
 let fontsReady: Promise<Uint8Array[]> | null = null;
@@ -33,12 +30,12 @@ async function ensureWasm() {
   return wasmReady;
 }
 
-async function ensureFonts() {
+async function ensureFonts(origin: string) {
   if (!fontsReady) {
     fontsReady = Promise.all(
-      FONT_URLS.map(async (url) => {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`font ${response.status}`);
+      FONT_PATHS.map(async (path) => {
+        const response = await fetch(new URL(path, origin).toString());
+        if (!response.ok) throw new Error(`font ${path} ${response.status}`);
         return new Uint8Array(await response.arrayBuffer());
       }),
     ).catch((error) => {
@@ -53,9 +50,13 @@ async function ensureFonts() {
  * Zet een SVG-string om in PNG-bytes. Gooit wanneer de wasm-runtime of de
  * fonts onbereikbaar zijn; de aanroeper valt dan terug op de SVG-variant.
  */
-export async function svgToPng(svg: string, width = 1200): Promise<Uint8Array> {
+export async function svgToPng(
+  svg: string,
+  origin: string,
+  width = 1200,
+): Promise<Uint8Array> {
   await ensureWasm();
-  const fonts = await ensureFonts();
+  const fonts = await ensureFonts(origin);
   const { Resvg } = await import("@resvg/resvg-wasm");
   const renderer = new Resvg(svg, {
     background: "#131211",
