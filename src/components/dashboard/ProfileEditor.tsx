@@ -625,7 +625,7 @@ export function ProfileEditor() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-4">
           {tab === "links" && (
             <>
@@ -1533,7 +1533,7 @@ export function ProfileEditor() {
         </div>
 
         {/* Live preview — desktop: pinned next to the editor */}
-        <aside className="hidden lg:sticky lg:top-6 lg:block lg:h-fit">
+        <aside className="hidden lg:sticky lg:top-20 lg:block lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Live view
@@ -1572,38 +1572,43 @@ export function ProfileEditor() {
 
           <div className="transition-all duration-300 ease-out">
           {previewDevice === "mobile" ? (
-            /* Realistisch toestel: 9:19.5, ronde hoeken, bezel en diepteschaduw */
+            /* Smartphone: 9:19.5, ronde hoeken, dunne bezel en camera-eiland */
             <div className="mx-auto w-full max-w-[290px] rounded-[2.6rem] border border-border/70 bg-foreground/90 p-[10px] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.55)] transition-all duration-300">
               <div className="relative overflow-hidden rounded-[2rem] bg-background">
-                <span className="absolute left-1/2 top-2 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-foreground/25" />
+                <span className="absolute left-1/2 top-2 z-10 flex h-3 w-20 -translate-x-1/2 items-center justify-center gap-1 rounded-full bg-foreground/80">
+                  <span className="h-1 w-8 rounded-full bg-background/25" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-background/35" />
+                </span>
                 <div className="scrollbar-slim aspect-[9/19.5] overflow-y-auto text-foreground">
                   <ProfileView profile={previewDraft} free={!verified} />
                 </div>
               </div>
             </div>
           ) : (
-            /* Laptopmockup: 16:10 venster met browserbalk, plus voetstuk */
+            /* Laptop: matte bezel met webcamstip, hinge en onderdek met trackpad-lip */
             <div className="mx-auto w-full max-w-[520px] transition-all duration-300">
-              <div className="overflow-hidden rounded-t-2xl border border-b-0 border-border bg-card shadow-[0_20px_50px_-24px_rgba(0,0,0,0.5)]">
-                <div className="flex items-center gap-1.5 border-b border-border bg-muted/50 px-3 py-2">
-                  <span className="h-2 w-2 rounded-full bg-foreground/20" />
-                  <span className="h-2 w-2 rounded-full bg-foreground/20" />
-                  <span className="h-2 w-2 rounded-full bg-foreground/20" />
-                  <span className="ml-2 h-4 flex-1 rounded-full bg-foreground/5" />
-                </div>
-                <div className="scrollbar-slim aspect-[16/10] overflow-y-auto bg-background text-foreground">
-                  <ProfileView profile={previewDraft} free={!verified} layout="wide" />
+              <div className="rounded-t-2xl bg-foreground/90 p-[10px] pt-[18px] shadow-[0_20px_50px_-24px_rgba(0,0,0,0.5)]">
+                <span className="mx-auto mb-[8px] block h-1 w-1 rounded-full bg-background/40" />
+                <div className="scrollbar-slim aspect-[16/10] overflow-y-auto rounded-[4px] bg-background text-foreground">
+                  {/* 1:1 desktopproporties: render op 1280px en zoom mee met de kaart */}
+                  <div className="w-[1280px]" style={{ zoom: 0.26 }}>
+                    <ProfileView profile={previewDraft} free={!verified} layout="wide" />
+                  </div>
+
                 </div>
               </div>
-              {/* Voetstuk in Surface-stijl: geen loze verticale ruimte */}
-              <div className="mx-auto h-2.5 w-[112%] -translate-x-[5.4%] rounded-b-xl border border-t-0 border-border bg-muted" />
-              <div className="mx-auto h-1 w-14 rounded-b-full bg-foreground/15" />
+              {/* Hinge */}
+              <div className="mx-auto h-1.5 w-[102%] -translate-x-[1%] rounded-sm bg-foreground/70" />
+              {/* Onderdek + trackpad-lip */}
+              <div className="mx-auto h-2.5 w-[112%] -translate-x-[5.4%] rounded-b-xl bg-foreground/80" />
+              <div className="mx-auto h-1.5 w-16 rounded-b-full bg-foreground/60" />
             </div>
           )}
           </div>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            Changes are shown instantly — saving makes them live.
+            Wijzigingen zijn direct zichtbaar — opslaan maakt ze live.
           </p>
+
         </aside>
 
       </div>
