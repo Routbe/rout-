@@ -14,7 +14,7 @@ import { ogSvg } from "@/lib/og-card";
 export const Route = createFileRoute("/api_/public/og/$handle")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         const raw = String(params.handle ?? "");
         const wantsSvg = /\.svg$/i.test(raw);
         const handle = raw
@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api_/public/og/$handle")({
         if (!wantsSvg) {
           try {
             const { svgToPng } = await import("@/lib/og-render.server");
-            const png = await svgToPng(svg);
+            const png = await svgToPng(svg, new URL(request.url).origin);
             return new Response(png as unknown as BodyInit, {
               headers: { "content-type": "image/png", "cache-control": cache },
             });
