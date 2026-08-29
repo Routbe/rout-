@@ -37,7 +37,7 @@ export function SocialSharingCard({
   const previewImage = prefs.ogImageUrl
     ? prefs.ogImageUrl
     : clean
-      ? `/api/public/og/${clean}.svg`
+      ? `/api/public/og/${clean}.png`
       : null;
 
   const bioKey = ({ nl: "bioNl", en: "bioEn", fr: "bioFr" } as const)[bioTab];

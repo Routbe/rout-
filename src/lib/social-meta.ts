@@ -93,7 +93,7 @@ export function profileSocialMeta(input: {
   // Eigen upload > dynamisch gegenereerde ROUT-kaart (nooit de kale avatar).
   const image =
     input.ogImageUrl?.trim() ||
-    `https://rout.be/api/public/og/${encodeURIComponent(input.handle)}.svg`;
+    `https://rout.be/api/public/og/${encodeURIComponent(input.handle)}.png`;
   const url = input.url?.trim() || `https://rout.be/${input.handle}`;
   return [
     { title },
@@ -111,9 +111,11 @@ export function profileSocialMeta(input: {
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: image },
-    ...(input.accentColor
-      ? [{ name: "theme-color", content: input.accentColor }]
-      : []),
+    { property: "og:image:alt", content: `${name} op ROUT` },
+    { property: "og:image:type", content: image.endsWith(".svg") ? "image/svg+xml" : "image/png" },
+    // Discord kleurt de rand van de embed met theme-color; mobiele browsers de
+    // adresbalk. Zonder eigen accent valt ROUT terug op het huisgoud.
+    { name: "theme-color", content: input.accentColor?.trim() || "#C9A84C" },
     ...(input.frozen ? [{ name: "robots", content: "noindex, nofollow" }] : []),
   ];
 }
