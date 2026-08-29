@@ -211,9 +211,14 @@ export const RESERVED_HANDLES = [
 
 export const isReservedHandle = (h: string) => RESERVED_HANDLES.includes(h);
 
-/** Public path for a profile: paid namespace when verified, /u/@ otherwise. */
+/**
+ * Public path for a profile: eigen namespace bij verificatie, anders `/u/`.
+ * Zonder `@` — de routes accepteren beide vormen, maar we tonen en delen de
+ * schone variant (`rout.be/u/jona`).
+ */
 export const profilePath = (username: string, verified?: boolean) =>
-  verified ? `/@${username}` : `/u/@${username}`;
+  verified ? `/${username}` : `/u/${username}`;
+
 
 /** Block catalogue used by the “+ Add block” drawer, grouped in folders. */
 export const BLOCK_KINDS: {

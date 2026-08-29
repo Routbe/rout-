@@ -13,7 +13,13 @@
  * handle route like `/jasper`.
  */
 import { db } from "@/lib/db/client";
-import { BASE36_SLUG_LENGTH, randomBase36Slug } from "@/lib/base36";
+import {
+  BASE36_SLUG_LENGTH,
+  SLUG_ALLOCATION_ATTEMPTS,
+  randomBase36Slug,
+  slugLengthForAttempt,
+} from "@/lib/base36";
+
 
 export type QrKind = "qr" | "link" | "both";
 
@@ -99,16 +105,18 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
  *
  * Nieuwe links krijgen een 4-teken Base36-code (opgeslagen in kleine letters,
  * weergegeven in hoofdletters), zodat `HTTPS://ROUT.BE/A89K` in een Version 1
- * QR van 21×21 modules past. Botst het vier keer, dan schalen we naar 5 tekens.
+ * QR van 21×21 modules past. Botst het, dan proberen we tot drie keer opnieuw
+ * op dezelfde lengte en schalen daarna automatisch naar 5 en 6 tekens — zo
+ * kunnen codes nooit opraken.
  */
-export async function allocateSlug(): Promise<string | null> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const length = attempt < 4 ? BASE36_SLUG_LENGTH : BASE36_SLUG_LENGTH + 1;
-    const slug = randomBase36Slug(length).toLowerCase();
+export async function allocateSlug(base: number = BASE36_SLUG_LENGTH): Promise<string | null> {
+  for (let attempt = 0; attempt < SLUG_ALLOCATION_ATTEMPTS; attempt++) {
+    const slug = randomBase36Slug(slugLengthForAttempt(attempt, base)).toLowerCase();
     if (await isSlugAvailable(slug)) return slug;
   }
   return null;
 }
+
 
 export function appOrigin(): string {
   return typeof window === "undefined" ? "" : window.location.origin;
@@ -160,4 +168,56 @@ export function shortLinkQrValue(
 export function mergeKind(current: QrKind | string | null, added: QrKind): QrKind {
   if (!current || current === added) return added;
   return "both";
+}
+
+// ---------------------------------------------------------------------------
+// Genaamruimte-gebonden eigen codes
+// ---------------------------------------------------------------------------
+//
+// Een zelfgekozen code leeft nooit meer in de root (`rout.be/apple`): dat zou
+// handles kunnen kapen en met systeemroutes botsen. Hij hangt altijd onder de
+// eigenaar:
+//
+//   geverifieerd → rout.be/jdelplanche/apple
+//   gratis       → rout.be/u/jona/apple
+//
+// In de databank slaan we exact dat pad (zonder leading slash) op als `slug`,
+// zodat de resolver hetzelfde pad kan opzoeken.
+
+/** Namespace van een eigenaar: `handle` bij verificatie, anders `u/alias`. */
+export function ownerNamespace(handle: string, verified?: boolean): string {
+  const h = handle.trim().replace(/^@/, "").toLowerCase();
+  return verified ? h : `u/${h}`;
+}
+
+/** Volledige slug zoals hij in `tracked_qrs.slug` staat. */
+export function namespacedSlug(handle: string, verified: boolean, custom: string): string {
+  return `${ownerNamespace(handle, verified)}/${normalizeSlug(custom)}`;
+}
+
+/** Zichtbaar voorvoegsel voor het invoerveld, bv. `rout.be/u/jona/`. */
+export function customLinkPrefix(
+  handle: string,
+  verified: boolean,
+  domain?: string | null,
+  domainEnabled = true,
+): string {
+  const host = shortLinkBase(domain, domainEnabled).replace(/^https?:\/\//, "") || "rout.be";
+  return `${host}/${ownerNamespace(handle, verified)}/`;
+}
+
+/** Volledige, deelbare URL van een eigen code. */
+export function customLinkUrl(
+  handle: string,
+  verified: boolean,
+  custom: string,
+  domain?: string | null,
+  domainEnabled = true,
+): string {
+  return `${shortLinkBase(domain, domainEnabled)}/${namespacedSlug(handle, verified, custom)}`;
+}
+
+/** Herkent een slug die al onder een namespace hangt (bevat een `/`). */
+export function isNamespacedSlug(slug: string): boolean {
+  return slug.includes("/");
 }

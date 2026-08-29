@@ -18,8 +18,10 @@ import {
 import type { QRType } from "./QRTypeSelector";
 import {
   allocateSlug,
+  customLinkPrefix,
   isSlugAvailable,
   mergeKind,
+  namespacedSlug,
   normalizeSlug,
   shortLinkBase,
   randomToken,
@@ -28,6 +30,7 @@ import {
   validateSlug,
   type QrKind,
 } from "@/lib/short-links";
+
 import {
   limitsFor,
   shortLinkBlockReason,
@@ -100,6 +103,8 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
   // Guest vs member vs verified: drives quota, vanity codes and the CTA copy.
   const [tierInput, setTierInput] = useState<TierInput>({ signedIn: false });
   const [linkCount, setLinkCount] = useState(0);
+  // Eigen codes hangen altijd onder de handle van de eigenaar.
+  const [handle, setHandle] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,7 +116,7 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
       const [{ data: profile }, { count }] = await Promise.all([
         db
           .from("profiles")
-          .select("verified, is_paid, is_early_believer")
+          .select("username, verified, is_paid, is_early_believer")
           .eq("id", user.id)
           .maybeSingle(),
         db
@@ -126,7 +131,9 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
           isPaid: profile?.is_paid ?? null,
           isEarlyBeliever: profile?.is_early_believer ?? null,
         });
+        setHandle((profile?.username as string | null) ?? null);
         setLinkCount(count ?? 0);
+
       }
       // Every connected domain is listed with its status; only a verified
       // domain with short links switched on can actually be picked.
@@ -163,6 +170,17 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
   const ready = targetUrl.trim().length > 0;
   const tier = studioTier(tierInput);
   const limits = limitsFor(tierInput);
+  // Een eigen code hangt onder de handle: `rout.be/<handle>/` voor
+  // geverifieerde accounts, `rout.be/u/<alias>/` voor gratis profielen.
+  const namespaceVerified = tier === "verified";
+  const canUseVanity = limits.canPickVanitySlug && Boolean(handle);
+  const vanityPrefix = handle
+    ? customLinkPrefix(
+        handle,
+        namespaceVerified,
+        domainChoice === "default" ? null : domainChoice,
+      )
+    : null;
   const blockReason = shortLinkBlockReason(tierInput, linkCount, slugInput.trim().length > 0);
   // Voorbeeldpayload voor de canvas-indicator: de echte code als die er is,
   // anders een representatieve 4-teken Base36-code op het gekozen domein.
@@ -173,11 +191,13 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
   if (!isTrackable) {
     return (
       <div className="rounded-2xl border border-border bg-card/60 p-4 text-sm text-muted-foreground">
-        Tracking is available for URL, image, PDF, MP3 and App links. Wi-Fi, text, email and SMS QRs
-        are decoded directly by the scanner and can't be redirected.
+        Statistieken &amp; tracking zijn beschikbaar voor URL&apos;s, afbeeldingen, PDF&apos;s,
+        MP3&apos;s en app-links. Wi-Fi-, tekst-, e-mail- en SMS-QR-codes worden direct door de
+        scanner gelezen en kunnen niet worden omgeleid.
       </div>
     );
   }
+
 
   const handleCreate = async () => {
     const normalized = normalizeUrl(targetUrl);
@@ -199,29 +219,33 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
         toast.error(quotaBlock);
         return;
       }
-      const vanityAllowed = limits.canPickVanitySlug;
+      const vanityAllowed = canUseVanity;
       if (wantsVanity && !vanityAllowed) {
         toast.info(
           t("track.vanityVerified"),
         );
       }
 
-      // A vanity code is validated and claimed here; otherwise we roll one.
+      // Een eigen code wordt hier gevalideerd en onder de eigen namespace
+      // geclaimd (`<handle>/apple` of `u/<alias>/apple`); anders rollen we er
+      // een willekeurige root-code voor.
       let slug: string | null;
-      if (wantsVanity && vanityAllowed) {
+      if (wantsVanity && vanityAllowed && handle) {
         const check = validateSlug(slugInput);
         if (!check.slug) {
           toast.error(check.error ?? t("track.slugInvalid"));
           return;
         }
-        if (!(await isSlugAvailable(check.slug))) {
+        const full = namespacedSlug(handle, namespaceVerified, check.slug);
+        if (!(await isSlugAvailable(full))) {
           toast.error(t("track.slugTaken"));
           return;
         }
-        slug = check.slug;
+        slug = full;
       } else {
         slug = await allocateSlug();
       }
+
 
       if (!slug) throw new Error("Could not allocate a short code");
 
@@ -353,7 +377,7 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
 
         <div className="space-y-1">
           <label htmlFor="short-link-value" className="block text-xs text-muted-foreground">
-            Short link (encoded in QR)
+            Korte link (zit in de QR-code)
           </label>
           <div className="flex gap-2">
             <Input
@@ -447,7 +471,7 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Anyone with this link can view scan stats. There's no way to recover it if lost.
+            Iedereen met deze link kan je scanstatistieken bekijken. Verlies je hem, dan is hij niet te herstellen.
           </p>
         </div>
 
@@ -521,26 +545,27 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
         <p className="text-xs text-muted-foreground flex items-center gap-1.5">
           <Link2 className="w-3.5 h-3.5" /> {t("track.customCode")}
         </p>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-muted-foreground shrink-0">
-            {shortLinkBase(domainChoice === "default" ? null : domainChoice).replace(/^https?:\/\//, "")}/
+        {/* Vast voorvoegsel: een eigen code leeft altijd onder je eigen
+            handle, nooit in de root — zo kan niemand een handle kapen. */}
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+          <span className="min-w-0 shrink-0 break-all font-mono text-xs text-muted-foreground">
+            {vanityPrefix ??
+              `${shortLinkBase(domainChoice === "default" ? null : domainChoice).replace(/^https?:\/\//, "")}/…/`}
           </span>
           <Input
-            placeholder={limits.canPickVanitySlug ? "my-poster" : t("track.vanityPlaceholder")}
+            placeholder={canUseVanity ? "apple" : t("track.vanityPlaceholder")}
             value={slugInput}
             onChange={(e) => setSlugInput(normalizeSlug(e.target.value))}
-            disabled={!limits.canPickVanitySlug}
-            className="h-10 font-mono text-xs"
+            disabled={!canUseVanity}
+            className="h-10 min-w-0 flex-1 font-mono text-xs"
           />
         </div>
         <p className="text-[11px] text-muted-foreground">
-          {limits.canPickVanitySlug
-            ? t("track.randomHint")
-            : t("track.guestHint")}
+          {canUseVanity ? t("track.randomHint") : t("track.guestHint")}
         </p>
       </div>
 
-      {/* Strikte 21×21-canvas: past de payload nog in een Version 1-QR? */}
+      {/* Canvasgrootte: de code schaalt automatisch mee met de payload. */}
       <CanvasIndicator payload={previewPayload} />
 
       <Button
@@ -563,9 +588,10 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
       )}
       {!ready && (
         <p className="text-[11px] text-muted-foreground">
-          Add a link or upload a file to enable tracking.
+          Voeg een link toe of upload een bestand om tracking aan te zetten.
         </p>
       )}
+
 
     </div>
   );
