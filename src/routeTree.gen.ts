@@ -34,6 +34,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VcardQrRouteImport } from './routes/vcard-qr'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as WifiQrRouteImport } from './routes/wifi-qr'
+import { Route as UsernameSlugRouteImport } from './routes/$username.$slug'
 import { Route as UsernameDonateRouteImport } from './routes/$username.donate'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -66,6 +67,7 @@ import { Route as ApiPublicHealthRouteImport } from './routes/api_.public.health
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api_.public.stripe-webhook'
 import { Route as AuthGitlabCallbackRouteImport } from './routes/auth_.gitlab.callback'
 import { Route as AuthMastodonCallbackRouteImport } from './routes/auth_.mastodon.callback'
+import { Route as UUsernameSlugRouteImport } from './routes/u.$username.$slug'
 import { Route as UUsernameDonateRouteImport } from './routes/u.$username.donate'
 import { Route as ApiAuthProviderCallbackRouteImport } from './routes/api_.auth.$provider.callback'
 import { Route as ApiPublicAuthProviderRouteImport } from './routes/api_.public.auth.$provider'
@@ -200,6 +202,11 @@ const WifiQrRoute = WifiQrRouteImport.update({
   id: '/wifi-qr',
   path: '/wifi-qr',
   getParentRoute: () => rootRouteImport,
+} as any)
+const UsernameSlugRoute = UsernameSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => UsernameRoute,
 } as any)
 const UsernameDonateRoute = UsernameDonateRouteImport.update({
   id: '/donate',
@@ -367,6 +374,11 @@ const AuthMastodonCallbackRoute = AuthMastodonCallbackRouteImport.update({
   path: '/auth/mastodon/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameSlugRoute = UUsernameSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => UUsernameRoute,
+} as any)
 const UUsernameDonateRoute = UUsernameDonateRouteImport.update({
   id: '/donate',
   path: '/donate',
@@ -447,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/vcard-qr': typeof VcardQrRoute
   '/verify': typeof VerifyRoute
   '/wifi-qr': typeof WifiQrRoute
+  '/$username/$slug': typeof UsernameSlugRoute
   '/$username/donate': typeof UsernameDonateRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -479,6 +492,7 @@ export interface FileRoutesByFullPath {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/auth/gitlab/callback': typeof AuthGitlabCallbackRoute
   '/auth/mastodon/callback': typeof AuthMastodonCallbackRoute
+  '/u/$username/$slug': typeof UUsernameSlugRoute
   '/u/$username/donate': typeof UUsernameDonateRoute
   '/api/auth/$provider/callback': typeof ApiAuthProviderCallbackRoute
   '/api/public/auth/$provider': typeof ApiPublicAuthProviderRouteWithChildren
@@ -515,6 +529,7 @@ export interface FileRoutesByTo {
   '/vcard-qr': typeof VcardQrRoute
   '/verify': typeof VerifyRoute
   '/wifi-qr': typeof WifiQrRoute
+  '/$username/$slug': typeof UsernameSlugRoute
   '/$username/donate': typeof UsernameDonateRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -547,6 +562,7 @@ export interface FileRoutesByTo {
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/auth/gitlab/callback': typeof AuthGitlabCallbackRoute
   '/auth/mastodon/callback': typeof AuthMastodonCallbackRoute
+  '/u/$username/$slug': typeof UUsernameSlugRoute
   '/u/$username/donate': typeof UUsernameDonateRoute
   '/api/auth/$provider/callback': typeof ApiAuthProviderCallbackRoute
   '/api/public/auth/$provider': typeof ApiPublicAuthProviderRouteWithChildren
@@ -585,6 +601,7 @@ export interface FileRoutesById {
   '/vcard-qr': typeof VcardQrRoute
   '/verify': typeof VerifyRoute
   '/wifi-qr': typeof WifiQrRoute
+  '/$username/$slug': typeof UsernameSlugRoute
   '/$username/donate': typeof UsernameDonateRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -617,6 +634,7 @@ export interface FileRoutesById {
   '/api_/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/auth_/gitlab/callback': typeof AuthGitlabCallbackRoute
   '/auth_/mastodon/callback': typeof AuthMastodonCallbackRoute
+  '/u/$username/$slug': typeof UUsernameSlugRoute
   '/u/$username/donate': typeof UUsernameDonateRoute
   '/api_/auth/$provider/callback': typeof ApiAuthProviderCallbackRoute
   '/api_/public/auth/$provider': typeof ApiPublicAuthProviderRouteWithChildren
@@ -655,6 +673,7 @@ export interface FileRouteTypes {
     | '/vcard-qr'
     | '/verify'
     | '/wifi-qr'
+    | '/$username/$slug'
     | '/$username/donate'
     | '/admin'
     | '/dashboard'
@@ -687,6 +706,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/auth/gitlab/callback'
     | '/auth/mastodon/callback'
+    | '/u/$username/$slug'
     | '/u/$username/donate'
     | '/api/auth/$provider/callback'
     | '/api/public/auth/$provider'
@@ -723,6 +743,7 @@ export interface FileRouteTypes {
     | '/vcard-qr'
     | '/verify'
     | '/wifi-qr'
+    | '/$username/$slug'
     | '/$username/donate'
     | '/admin'
     | '/dashboard'
@@ -755,6 +776,7 @@ export interface FileRouteTypes {
     | '/api/public/stripe-webhook'
     | '/auth/gitlab/callback'
     | '/auth/mastodon/callback'
+    | '/u/$username/$slug'
     | '/u/$username/donate'
     | '/api/auth/$provider/callback'
     | '/api/public/auth/$provider'
@@ -792,6 +814,7 @@ export interface FileRouteTypes {
     | '/vcard-qr'
     | '/verify'
     | '/wifi-qr'
+    | '/$username/$slug'
     | '/$username/donate'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
@@ -824,6 +847,7 @@ export interface FileRouteTypes {
     | '/api_/public/stripe-webhook'
     | '/auth_/gitlab/callback'
     | '/auth_/mastodon/callback'
+    | '/u/$username/$slug'
     | '/u/$username/donate'
     | '/api_/auth/$provider/callback'
     | '/api_/public/auth/$provider'
@@ -1065,6 +1089,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WifiQrRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$username/$slug': {
+      id: '/$username/$slug'
+      path: '/$slug'
+      fullPath: '/$username/$slug'
+      preLoaderRoute: typeof UsernameSlugRouteImport
+      parentRoute: typeof UsernameRoute
+    }
     '/$username/donate': {
       id: '/$username/donate'
       path: '/donate'
@@ -1289,6 +1320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthMastodonCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username/$slug': {
+      id: '/u/$username/$slug'
+      path: '/$slug'
+      fullPath: '/u/$username/$slug'
+      preLoaderRoute: typeof UUsernameSlugRouteImport
+      parentRoute: typeof UUsernameRoute
+    }
     '/u/$username/donate': {
       id: '/u/$username/donate'
       path: '/donate'
@@ -1363,10 +1401,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface UsernameRouteChildren {
+  UsernameSlugRoute: typeof UsernameSlugRoute
   UsernameDonateRoute: typeof UsernameDonateRoute
 }
 
 const UsernameRouteChildren: UsernameRouteChildren = {
+  UsernameSlugRoute: UsernameSlugRoute,
   UsernameDonateRoute: UsernameDonateRoute,
 }
 
@@ -1444,10 +1484,12 @@ const AuthGitlabRouteWithChildren = AuthGitlabRoute._addFileChildren(
 )
 
 interface UUsernameRouteChildren {
+  UUsernameSlugRoute: typeof UUsernameSlugRoute
   UUsernameDonateRoute: typeof UUsernameDonateRoute
 }
 
 const UUsernameRouteChildren: UUsernameRouteChildren = {
+  UUsernameSlugRoute: UUsernameSlugRoute,
   UUsernameDonateRoute: UUsernameDonateRoute,
 }
 
