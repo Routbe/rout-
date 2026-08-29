@@ -8,7 +8,13 @@
  * token (which is itself the credential for the public stats dashboard).
  */
 import { sql } from "@/lib/neon";
-import { BASE36_SLUG_LENGTH, randomBase36Slug } from "@/lib/base36";
+import {
+  BASE36_SLUG_LENGTH,
+  SLUG_ALLOCATION_ATTEMPTS,
+  baseSlugLengthForUsage,
+  randomBase36Slug,
+  slugLengthForAttempt,
+} from "@/lib/base36";
 
 type Row = Record<string, unknown>;
 
@@ -29,14 +35,37 @@ export async function isSlugTaken(slug: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+/** Hoeveel root-codes van deze lengte zijn al uitgedeeld (voor de 80%-regel). */
+async function countRootSlugs(length: number): Promise<number> {
+  try {
+    const rows = (await sql`
+      select count(*)::int as n from public.tracked_qrs
+       where slug not like '%/%' and length(slug) = ${length}
+    `) as Row[];
+    return (rows[0]?.["n"] as number) ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Deelt een vrije Base36-code uit.
+ *
+ * Vier tekens is de standaard (past in een Version 1-QR). Botst dat, dan
+ * proberen we tot drie keer opnieuw en schalen daarna automatisch naar 5 en 6
+ * tekens. Zit de naamruimte van de basislengte al boven 80% vol, dan beginnen
+ * we meteen een teken langer.
+ */
 export async function allocateSlugServer(): Promise<string | null> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const length = attempt < 4 ? BASE36_SLUG_LENGTH : BASE36_SLUG_LENGTH + 1;
-    const slug = randomBase36Slug(length).toLowerCase();
+  const used = await countRootSlugs(BASE36_SLUG_LENGTH);
+  const base = baseSlugLengthForUsage(used, BASE36_SLUG_LENGTH);
+  for (let attempt = 0; attempt < SLUG_ALLOCATION_ATTEMPTS; attempt++) {
+    const slug = randomBase36Slug(slugLengthForAttempt(attempt, base)).toLowerCase();
     if (!(await isSlugTaken(slug))) return slug;
   }
   return null;
 }
+
 
 /** Same limits the old Postgres trigger `enforce_short_link_limits` enforced. */
 async function assertQuota(userId: string) {
