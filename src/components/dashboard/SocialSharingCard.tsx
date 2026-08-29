@@ -15,7 +15,7 @@ import {
  * Bepaalt hoe het profiel eruitziet wanneer iemand de link deelt op Discord,
  * WhatsApp, Mastodon of X: eigen titel, beschrijving, deelafbeelding en
  * accentkleur (`<meta name="theme-color">`). Leeg laten = ROUT genereert zelf
- * een kaart op `/api/public/og/<handle>.svg`.
+ * een kaart op `/api/public/og/<handle>.png`.
  */
 export function SocialSharingCard({
   handle,
