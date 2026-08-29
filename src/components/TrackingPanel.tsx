@@ -170,6 +170,17 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
   const ready = targetUrl.trim().length > 0;
   const tier = studioTier(tierInput);
   const limits = limitsFor(tierInput);
+  // Een eigen code hangt onder de handle: `rout.be/<handle>/` voor
+  // geverifieerde accounts, `rout.be/u/<alias>/` voor gratis profielen.
+  const namespaceVerified = tier === "verified";
+  const canUseVanity = limits.canPickVanitySlug && Boolean(handle);
+  const vanityPrefix = handle
+    ? customLinkPrefix(
+        handle,
+        namespaceVerified,
+        domainChoice === "default" ? null : domainChoice,
+      )
+    : null;
   const blockReason = shortLinkBlockReason(tierInput, linkCount, slugInput.trim().length > 0);
   // Voorbeeldpayload voor de canvas-indicator: de echte code als die er is,
   // anders een representatieve 4-teken Base36-code op het gekozen domein.
@@ -180,11 +191,13 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
   if (!isTrackable) {
     return (
       <div className="rounded-2xl border border-border bg-card/60 p-4 text-sm text-muted-foreground">
-        Tracking is available for URL, image, PDF, MP3 and App links. Wi-Fi, text, email and SMS QRs
-        are decoded directly by the scanner and can't be redirected.
+        Statistieken &amp; tracking zijn beschikbaar voor URL&apos;s, afbeeldingen, PDF&apos;s,
+        MP3&apos;s en app-links. Wi-Fi-, tekst-, e-mail- en SMS-QR-codes worden direct door de
+        scanner gelezen en kunnen niet worden omgeleid.
       </div>
     );
   }
+
 
   const handleCreate = async () => {
     const normalized = normalizeUrl(targetUrl);
