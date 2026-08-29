@@ -59,7 +59,7 @@ export function ogSvg(input: OgCardInput) {
     ? `<clipPath id="a"><circle cx="150" cy="315" r="90"/></clipPath>
        <image href="${escapeXml(input.avatarUrl)}" x="60" y="225" width="180" height="180" preserveAspectRatio="xMidYMid slice" clip-path="url(#a)"/>`
     : `<circle cx="150" cy="315" r="90" fill="${escapeXml(input.accent)}" opacity="0.18"/>
-       <text x="150" y="340" text-anchor="middle" font-family="ROUT Sans" font-size="64" font-weight="600" fill="${escapeXml(input.accent)}">${escapeXml(initials(input.name))}</text>`;
+       <text x="150" y="340" text-anchor="middle" font-family="Inter" font-size="64" font-weight="600" fill="${escapeXml(input.accent)}">${escapeXml(initials(input.name))}</text>`;
 
   const check = input.verified
     ? `<g transform="translate(${300 + Math.min(input.name.length, 24) * 23} 232)">
@@ -80,16 +80,16 @@ export function ogSvg(input: OgCardInput) {
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect x="18" y="18" width="1164" height="594" rx="28" fill="none" stroke="${escapeXml(input.accent)}" stroke-opacity="0.35" stroke-width="2"/>
   ${avatar}
-  <text x="300" y="252" font-family="ROUT Sans" font-size="62" font-weight="600" fill="#F4EFE3">${escapeXml(input.name.slice(0, 26))}</text>
+  <text x="300" y="252" font-family="Inter" font-size="62" font-weight="600" fill="#F4EFE3">${escapeXml(input.name.slice(0, 26))}</text>
   ${check}
-  <text x="302" y="300" font-family="ROUT Sans" font-size="30" fill="${escapeXml(input.accent)}">${escapeXml(urlLabel)}</text>
+  <text x="302" y="300" font-family="Inter" font-size="30" fill="${escapeXml(input.accent)}">${escapeXml(urlLabel)}</text>
   ${lines
     .map(
       (line, i) =>
-        `<text x="302" y="${356 + i * 40}" font-family="ROUT Sans" font-size="28" fill="#C9C6BE">${escapeXml(line)}</text>`,
+        `<text x="302" y="${356 + i * 40}" font-family="Inter" font-size="28" fill="#C9C6BE">${escapeXml(line)}</text>`,
     )
     .join("")}
   <g transform="translate(1040 470) scale(0.9)">${routRabbitMarkup(input.accent)}</g>
-  <text x="60" y="566" font-family="ROUT Sans" font-size="22" letter-spacing="6" fill="#8A8A94">ROUT — SOEVEREINE IDENTITEIT</text>
+  <text x="60" y="566" font-family="Inter" font-size="22" letter-spacing="6" fill="#8A8A94">ROUT — SOEVEREINE IDENTITEIT</text>
 </svg>`;
 }
