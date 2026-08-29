@@ -12,22 +12,34 @@ const WASM_URL = "https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index_bg.
 /** Eigen fonts uit `public/fonts` — geen externe fontdienst, geen tracking. */
 const FONT_PATHS = ["/fonts/Inter-Regular.ttf", "/fonts/Inter-SemiBold.ttf"];
 
-let wasmReady: Promise<void> | null = null;
+/**
+ * De wasm-runtime kan per isolate maar één keer geïnitialiseerd worden, terwijl
+ * dit module tijdens ontwikkeling wél opnieuw geladen wordt. De vlag leeft
+ * daarom op `globalThis`.
+ */
+const globalScope = globalThis as typeof globalThis & {
+  __routResvgReady?: Promise<void>;
+};
 let fontsReady: Promise<Uint8Array[]> | null = null;
 
 async function ensureWasm() {
-  if (!wasmReady) {
-    wasmReady = (async () => {
+  if (!globalScope.__routResvgReady) {
+    globalScope.__routResvgReady = (async () => {
       const { initWasm } = await import("@resvg/resvg-wasm");
       const response = await fetch(WASM_URL);
       if (!response.ok) throw new Error(`resvg wasm ${response.status}`);
-      await initWasm(await response.arrayBuffer());
+      try {
+        await initWasm(await response.arrayBuffer());
+      } catch (error) {
+        // Al geïnitialiseerd in dit isolate: dat is precies wat we wilden.
+        if (!/already initialized/i.test(String(error))) throw error;
+      }
     })().catch((error) => {
-      wasmReady = null;
+      globalScope.__routResvgReady = undefined;
       throw error;
     });
   }
-  return wasmReady;
+  return globalScope.__routResvgReady;
 }
 
 async function ensureFonts(origin: string) {
