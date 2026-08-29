@@ -18,10 +18,56 @@ export const BASE36_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /** Standaardlengte: 4 tekens = 36^4 = 1.679.616 combinaties. */
 export const BASE36_SLUG_LENGTH = 4;
 
+/** Bovengrens waar de generator naar opschaalt als 4 en 5 tekens vol raken. */
+export const BASE36_MAX_SLUG_LENGTH = 6;
+
+/** Vanaf welke bezettingsgraad we automatisch een teken langer gaan. */
+export const NAMESPACE_SATURATION = 0.8;
+
+/** Aantal pogingen op de basislengte: 1 poging + 3 retries bij botsing. */
+export const BASE36_COLLISION_RETRIES = 3;
+
 /** Maximale payloadlengte van een Version 1-M QR in alphanumeric mode. */
 export const QR_V1_ALPHANUMERIC_CAPACITY = 20;
 
+/** Aantal mogelijke codes van een gegeven lengte. */
+export function base36Capacity(length: number): number {
+  return Math.pow(BASE36_ALPHABET.length, length);
+}
+
+/**
+ * Basislengte op grond van de huidige bezetting: zodra meer dan 80% van de
+ * naamruimte gebruikt is, schuiven we een teken op zodat botsingen zeldzaam
+ * blijven en codes nooit "opraken".
+ */
+export function baseSlugLengthForUsage(
+  used: number,
+  length: number = BASE36_SLUG_LENGTH,
+): number {
+  let l = length;
+  while (l < BASE36_MAX_SLUG_LENGTH && used / base36Capacity(l) > NAMESPACE_SATURATION) {
+    l += 1;
+  }
+  return l;
+}
+
+/**
+ * Lengte voor poging `attempt` (0-based): eerst 4 pogingen op de basislengte
+ * (1 + 3 retries), dan +1 teken, en uiteindelijk +2 — begrensd op 6.
+ */
+export function slugLengthForAttempt(
+  attempt: number,
+  base: number = BASE36_SLUG_LENGTH,
+): number {
+  const step = attempt <= BASE36_COLLISION_RETRIES ? 0 : attempt <= BASE36_COLLISION_RETRIES + 2 ? 1 : 2;
+  return Math.min(base + step, BASE36_MAX_SLUG_LENGTH);
+}
+
+/** Totaal aantal pogingen dat de allocator doet voor hij opgeeft. */
+export const SLUG_ALLOCATION_ATTEMPTS = BASE36_COLLISION_RETRIES + 5;
+
 const BASE36_RE = /^[0-9A-Z]{2,32}$/;
+
 
 /**
  * Cryptografisch willekeurige Base36-slug in hoofdletters.
