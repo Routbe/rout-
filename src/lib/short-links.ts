@@ -13,7 +13,13 @@
  * handle route like `/jasper`.
  */
 import { db } from "@/lib/db/client";
-import { BASE36_SLUG_LENGTH, randomBase36Slug } from "@/lib/base36";
+import {
+  BASE36_SLUG_LENGTH,
+  SLUG_ALLOCATION_ATTEMPTS,
+  randomBase36Slug,
+  slugLengthForAttempt,
+} from "@/lib/base36";
+
 
 export type QrKind = "qr" | "link" | "both";
 
@@ -99,16 +105,18 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
  *
  * Nieuwe links krijgen een 4-teken Base36-code (opgeslagen in kleine letters,
  * weergegeven in hoofdletters), zodat `HTTPS://ROUT.BE/A89K` in een Version 1
- * QR van 21×21 modules past. Botst het vier keer, dan schalen we naar 5 tekens.
+ * QR van 21×21 modules past. Botst het, dan proberen we tot drie keer opnieuw
+ * op dezelfde lengte en schalen daarna automatisch naar 5 en 6 tekens — zo
+ * kunnen codes nooit opraken.
  */
-export async function allocateSlug(): Promise<string | null> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const length = attempt < 4 ? BASE36_SLUG_LENGTH : BASE36_SLUG_LENGTH + 1;
-    const slug = randomBase36Slug(length).toLowerCase();
+export async function allocateSlug(base: number = BASE36_SLUG_LENGTH): Promise<string | null> {
+  for (let attempt = 0; attempt < SLUG_ALLOCATION_ATTEMPTS; attempt++) {
+    const slug = randomBase36Slug(slugLengthForAttempt(attempt, base)).toLowerCase();
     if (await isSlugAvailable(slug)) return slug;
   }
   return null;
 }
+
 
 export function appOrigin(): string {
   return typeof window === "undefined" ? "" : window.location.origin;
