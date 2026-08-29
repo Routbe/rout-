@@ -59,6 +59,40 @@ export const Route = createFileRoute("/api_/public/og/$handle")({
           // Database onbereikbaar: toon de generieke ROUT-kaart.
         }
 
+        const cache = "public, max-age=1800, s-maxage=86400";
+
+        if (!wantsSvg) {
+          try {
+            const { svgToPng, fetchImageAsDataUri } = await import(
+              "@/lib/og-render.server"
+            );
+            // resvg haalt zelf geen externe afbeeldingen op: de avatar moet
+            // als data-URI in de vector zitten voor we rasteriseren.
+            const inlineAvatar = avatarUrl
+              ? await fetchImageAsDataUri(avatarUrl)
+              : null;
+            const png = await svgToPng(
+              ogSvg({
+                handle,
+                name,
+                tagline,
+                verified,
+                accent,
+                bg: "#131211",
+                avatarUrl: inlineAvatar,
+                ...(urlLabel ? { urlLabel } : {}),
+              }),
+              new URL(request.url).origin,
+            );
+            return new Response(png as unknown as BodyInit, {
+              headers: { "content-type": "image/png", "cache-control": cache },
+            });
+          } catch (error) {
+            console.error("og png render failed", error);
+            // Val terug op de vector zodat de kaart nooit helemaal wegvalt.
+          }
+        }
+
         const svg = ogSvg({
           handle,
           name,
@@ -70,20 +104,6 @@ export const Route = createFileRoute("/api_/public/og/$handle")({
           ...(urlLabel ? { urlLabel } : {}),
         });
 
-        const cache = "public, max-age=1800, s-maxage=86400";
-
-        if (!wantsSvg) {
-          try {
-            const { svgToPng } = await import("@/lib/og-render.server");
-            const png = await svgToPng(svg, new URL(request.url).origin);
-            return new Response(png as unknown as BodyInit, {
-              headers: { "content-type": "image/png", "cache-control": cache },
-            });
-          } catch (error) {
-            console.error("og png render failed", error);
-            // Val terug op de vector zodat de kaart nooit helemaal wegvalt.
-          }
-        }
 
         return new Response(svg, {
           headers: {
