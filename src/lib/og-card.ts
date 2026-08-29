@@ -57,8 +57,9 @@ export function ogSvg(input: OgCardInput) {
   const lines = wrap(input.tagline, 52, 2);
   const avatar = input.avatarUrl
     ? `<clipPath id="a"><circle cx="150" cy="315" r="90"/></clipPath>
+       <circle cx="150" cy="315" r="94" fill="none" stroke="${escapeXml(input.accent)}" stroke-opacity="0.7" stroke-width="4"/>
        <image href="${escapeXml(input.avatarUrl)}" x="60" y="225" width="180" height="180" preserveAspectRatio="xMidYMid slice" clip-path="url(#a)"/>`
-    : `<circle cx="150" cy="315" r="90" fill="${escapeXml(input.accent)}" opacity="0.18"/>
+    : `<circle cx="150" cy="315" r="90" fill="#12100D" fill-opacity="0.85" stroke="${escapeXml(input.accent)}" stroke-opacity="0.7" stroke-width="4"/>
        <text x="150" y="340" text-anchor="middle" font-family="Inter" font-size="64" font-weight="600" fill="${escapeXml(input.accent)}">${escapeXml(initials(input.name))}</text>`;
 
   const check = input.verified
