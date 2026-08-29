@@ -9,7 +9,9 @@
  *
  * Gedeeld door de UI en de databank-trigger, zodat de grenzen niet uiteenlopen.
  */
-import { fitsVersion1, qrPayloadForSlug } from "@/lib/base36";
+import { qrPayloadForSlug } from "@/lib/base36";
+import { QR_MAX_VERSION, qrVersionFor } from "@/lib/qr-version";
+
 
 export type StudioTier = "guest" | "member" | "verified";
 
@@ -89,39 +91,45 @@ export function shortLinkBlockReason(
 }
 
 /**
- * Strikte 21×21-indicator (QR Version 1).
+ * Canvas-check met automatische versieschaling.
  *
- * Version 1 heeft exact 21×21 modules en dat is de scherpste, snelst
- * scanbare code. De payload moet dan volledig in de alphanumeric-subset
- * blijven en maximaal 20 tekens lang zijn.
+ * Version 1 (21×21) blijft het ideaal — het scant het snelst — maar een
+ * langere payload is geen fout meer: we melden simpelweg welke versie de
+ * encoder kiest. Alleen boven Version 10 waarschuwen we echt.
  */
 export type CanvasCheck = {
-  /** Aantal modules per zijde van het strikte doel. */
-  modules: 21;
-  /** Past de payload nog in Version 1? */
+  /** Modules per zijde van de versie die de encoder gaat kiezen. */
+  modules: number;
+  /** Versie 1–10. */
+  version: number;
+  /** Past de payload binnen Version 1–10? */
   fits: boolean;
+  /** Blijft de payload op het ideale 21×21-canvas (Version 1)? */
+  isVersion1: boolean;
   payload: string;
   length: number;
-  /** Maximale payloadlengte voor Version 1-M in alphanumeric mode. */
-  capacity: 20;
+  /** Capaciteit van de gekozen versie. */
+  capacity: number;
   reason: string | null;
 };
 
 export function checkVersion1Canvas(payload: string): CanvasCheck {
   const value = payload ?? "";
-  const fits = fitsVersion1(value);
-  const tooLong = value.length > 20;
+  const info = qrVersionFor(value);
+  const isVersion1 = info.version === 1 && info.fits;
   return {
-    modules: 21,
-    fits,
+    modules: info.modules,
+    version: info.version,
+    fits: info.fits,
+    isVersion1,
     payload: value,
-    length: value.length,
-    capacity: 20,
-    reason: fits
-      ? null
-      : tooLong
-        ? `${value.length} tekens — Version 1 houdt op bij 20.`
-        : "Kleine letters of speciale tekens duwen de code naar byte mode (Version 2+).",
+    length: info.length,
+    capacity: info.capacity,
+    reason: !info.fits
+      ? `${info.length} tekens — dat gaat voorbij Version ${QR_MAX_VERSION}; kort de link in.`
+      : isVersion1
+        ? null
+        : `${info.length} tekens — de code schaalt automatisch naar Version ${info.version} (${info.modules}×${info.modules}).`,
   };
 }
 
@@ -129,3 +137,4 @@ export function checkVersion1Canvas(payload: string): CanvasCheck {
 export function checkSlugCanvas(slug: string, origin?: string): CanvasCheck {
   return checkVersion1Canvas(qrPayloadForSlug(slug, origin));
 }
+
