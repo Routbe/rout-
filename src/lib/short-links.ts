@@ -169,3 +169,55 @@ export function mergeKind(current: QrKind | string | null, added: QrKind): QrKin
   if (!current || current === added) return added;
   return "both";
 }
+
+// ---------------------------------------------------------------------------
+// Genaamruimte-gebonden eigen codes
+// ---------------------------------------------------------------------------
+//
+// Een zelfgekozen code leeft nooit meer in de root (`rout.be/apple`): dat zou
+// handles kunnen kapen en met systeemroutes botsen. Hij hangt altijd onder de
+// eigenaar:
+//
+//   geverifieerd → rout.be/jdelplanche/apple
+//   gratis       → rout.be/u/jona/apple
+//
+// In de databank slaan we exact dat pad (zonder leading slash) op als `slug`,
+// zodat de resolver hetzelfde pad kan opzoeken.
+
+/** Namespace van een eigenaar: `handle` bij verificatie, anders `u/alias`. */
+export function ownerNamespace(handle: string, verified?: boolean): string {
+  const h = handle.trim().replace(/^@/, "").toLowerCase();
+  return verified ? h : `u/${h}`;
+}
+
+/** Volledige slug zoals hij in `tracked_qrs.slug` staat. */
+export function namespacedSlug(handle: string, verified: boolean, custom: string): string {
+  return `${ownerNamespace(handle, verified)}/${normalizeSlug(custom)}`;
+}
+
+/** Zichtbaar voorvoegsel voor het invoerveld, bv. `rout.be/u/jona/`. */
+export function customLinkPrefix(
+  handle: string,
+  verified: boolean,
+  domain?: string | null,
+  domainEnabled = true,
+): string {
+  const host = shortLinkBase(domain, domainEnabled).replace(/^https?:\/\//, "") || "rout.be";
+  return `${host}/${ownerNamespace(handle, verified)}/`;
+}
+
+/** Volledige, deelbare URL van een eigen code. */
+export function customLinkUrl(
+  handle: string,
+  verified: boolean,
+  custom: string,
+  domain?: string | null,
+  domainEnabled = true,
+): string {
+  return `${shortLinkBase(domain, domainEnabled)}/${namespacedSlug(handle, verified, custom)}`;
+}
+
+/** Herkent een slug die al onder een namespace hangt (bevat een `/`). */
+export function isNamespacedSlug(slug: string): boolean {
+  return slug.includes("/");
+}
