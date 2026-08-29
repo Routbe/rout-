@@ -377,7 +377,7 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
 
         <div className="space-y-1">
           <label htmlFor="short-link-value" className="block text-xs text-muted-foreground">
-            Short link (encoded in QR)
+            Korte link (zit in de QR-code)
           </label>
           <div className="flex gap-2">
             <Input
@@ -471,7 +471,7 @@ export function TrackingPanel({ qrType, targetUrl, tracked, onTrackedChange }: T
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Anyone with this link can view scan stats. There's no way to recover it if lost.
+            Iedereen met deze link kan je scanstatistieken bekijken. Verlies je hem, dan is hij niet te herstellen.
           </p>
         </div>
 
