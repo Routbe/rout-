@@ -1533,7 +1533,7 @@ export function ProfileEditor() {
         </div>
 
         {/* Live preview — desktop: pinned next to the editor */}
-        <aside className="hidden lg:sticky lg:top-6 lg:block lg:h-fit">
+        <aside className="hidden lg:sticky lg:top-20 lg:block lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Live view
