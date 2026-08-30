@@ -1,3 +1,4 @@
+import { QrCode } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { SocialPlatformIcon } from "@/lib/social-icons";
@@ -99,7 +100,6 @@ import {
 import { SubdomainPanel } from "@/components/dashboard/SubdomainPanel";
 import { BadgesPanel } from "@/components/dashboard/BadgesPanel";
 import { SocialVerifyPanel } from "@/components/dashboard/SocialVerifyPanel";
-import { ProfileQrCard } from "@/components/dashboard/ProfileQrCard";
 import { ReferralPanel } from "@/components/dashboard/ReferralPanel";
 import { ReferralAnalytics } from "@/components/dashboard/ReferralAnalytics";
 import { BadgeActivityPanel } from "@/components/dashboard/BadgeActivityPanel";
