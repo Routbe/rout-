@@ -238,6 +238,8 @@ export function ProfileView({
         >
           <UserPlus className="h-3.5 w-3.5" aria-hidden /> Contact opslaan
         </button>
+        )}
+
 
         <BadgeShowcase userId={profile.id} theme={t} />
 
