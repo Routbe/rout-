@@ -1201,7 +1201,21 @@ export function ProfileEditor() {
                     onCheckedChange={(v) => setPref("showWatermark", v)}
                   />
                 </div>
+                <div className="flex items-start justify-between gap-4 border-t border-border pt-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">&ldquo;Contact opslaan&rdquo;-knop</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Bezoekers bewaren je profiel als contactkaart (vCard) in hun adresboek.
+                    </p>
+                  </div>
+                  <Switch
+                    aria-label="Contact opslaan-knop tonen"
+                    checked={prefs.showVcardButton}
+                    onCheckedChange={(v) => setPref("showVcardButton", v)}
+                  />
+                </div>
               </section>
+
             </>
           )}
 
