@@ -49,6 +49,9 @@ export interface ProfileDisplayPrefs {
   bioNl: string | null;
   bioEn: string | null;
   bioFr: string | null;
+  /** Toont de "Contact opslaan" (vCard) knop op het publieke profiel. */
+  showVcardButton: boolean;
+
 }
 
 export const DEFAULT_DISPLAY_PREFS: ProfileDisplayPrefs = {
