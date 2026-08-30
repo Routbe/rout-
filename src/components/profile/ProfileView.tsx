@@ -212,8 +212,10 @@ export function ProfileView({
         )}
 
         {/* vCard: bezoekers bewaren het profiel meteen in hun adresboek. */}
+        {prefs.showVcardButton && (
         <button
           type="button"
+
           onClick={() =>
             downloadVCard({
               handle: profile.username ?? "",
